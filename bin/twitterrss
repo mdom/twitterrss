@@ -5,8 +5,6 @@ use warnings;
 
 use Net::Twitter::Lite::WithAPIv1_1;
 use Scalar::Util 'blessed';
-use Mojo::ByteStream 'b';
-use Mojo::JSON;
 use Try::Tiny;
 use Path::Tiny;
 use YAML::Tiny;
@@ -16,7 +14,6 @@ use Regexp::Common qw /URI/;
 use autodie;
 
 my $feed = XML::FeedPP::RSS->new();
-$feed->xmlns('xmlns:media' => 'http://search.yahoo.com/mrss/');
 
 my $config_file = path('/etc/twitterrss.conf');
 
@@ -42,7 +39,6 @@ for my $user ( @{$config->{user}} ) {
    try {
       my $statuses = $nt->mentions;
       for my $status ( @$statuses ) { 
-        #my $text = b($status->{text})->encode;
         my $text = $status->{text};
 
 	my %url;
