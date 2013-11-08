@@ -42,12 +42,22 @@ for my $user ( @{$config->{user}} ) {
         my $text = $status->{text};
 
 	my %url;
-	if ( defined $status->{entities} and defined $status->{entities}->{urls} ) {
-		for my $url (@{$status->{entities}->{urls}}) {
-			$url{$url->{url}} = $url;
+	if ( defined $status->{entities} ) {
+		if ( defined $status->{entities}->{urls} ) {
+			for my $url (@{$status->{entities}->{urls}}) {
+				$url{$url->{url}} = $url;
+			}
 		}
-		$text =~ s($RE{URI}{HTTP}{-keep => 1})(qq{<a href="$url{$1}->{expanded_url}">$url{$1}->{display_url}</a>})eg;
+		if ( defined $status->{entities}->{media} ) {
+			for my $url (@{$status->{entities}->{media}}) {
+				$url{$url->{url}} = $url;
+			}
+		}
 	}
+
+	if ( keys %url ) {
+		$text =~ s($RE{URI}{HTTP}{-keep => 1})(qq{<a href="$url{$1}->{expanded_url}">$url{$1}->{display_url}</a>})eg;
+        }
 
 	$text =~ s{#([[:alnum:]]+)}{<a href="http://twitter.com/search?q=%23$1">#$1</a>}g;
 	$text =~ s{@([A-Za-z0-9_]{1,15})}{<a href="http://twitter.com/$1">\@$1</a>}g;
