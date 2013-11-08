@@ -1,0 +1,77 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use Net::Twitter::Lite::WithAPIv1_1;
+use Scalar::Util 'blessed';
+use Mojo::ByteStream 'b';
+use Mojo::JSON;
+use Try::Tiny;
+use Path::Tiny;
+use YAML::Tiny;
+use XML::FeedPP;
+use Date::Parse qw(str2time);
+use Regexp::Common qw /URI/;
+use autodie;
+
+my $feed = XML::FeedPP::RSS->new();
+$feed->xmlns('xmlns:media' => 'http://search.yahoo.com/mrss/');
+
+my $config_file = path('/etc/twitterrss.conf');
+
+my $config = YAML::Tiny->read($config_file)
+  or die "Can't parse $config_file: $YAML::Tiny::errstr\n";
+
+# we just need the first document
+$config = $config->[0];
+
+my $output_dir = path($config->{output_dir});
+die "Missing output directory in config file\n"
+	unless $output_dir;
+$output_dir->mkpath();
+
+my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
+      consumer_key        => $config->{consumer_key},
+      consumer_secret     => $config->{consumer_secret},
+      access_token        => $config->{token},
+      access_token_secret => $config->{token_secret},
+);
+
+for my $user ( @{$config->{user}} ) {
+   try {
+      my $statuses = $nt->mentions;
+      for my $status ( @$statuses ) { 
+        #my $text = b($status->{text})->encode;
+        my $text = $status->{text};
+
+	my %url;
+	if ( defined $status->{entities} and defined $status->{entities}->{urls} ) {
+		for my $url (@{$status->{entities}->{urls}}) {
+			$url{$url->{url}} = $url;
+		}
+		$text =~ s($RE{URI}{HTTP}{-keep => 1})(qq{<a href="$url{$1}->{expanded_url}">$url{$1}->{display_url}</a>})eg;
+	}
+
+	$text =~ s{#([[:alnum:]]+)}{<a href="http://twitter.com/search?q=%23$1">#$1</a>}g;
+	$text =~ s{@([A-Za-z0-9_]{1,15})}{<a href="http://twitter.com/$1">\@$1</a>}g;
+
+	my $pubDate = str2time($status->{created_at});
+	my $item = $feed->add_item(
+		description => \$text,
+		pubDate => $pubDate,
+		author => $status->{user}->{screen_name},
+        );
+    my $image_url = $status->{user}->{profile_image_url};
+    my ($type) = $image_url =~ /\.([^.]+?)$/;
+    $item->set('enclosure@url' => $status->{user}->{profile_image_url});
+    $item->set('enclosure@type' => "image/$type");
+    $item->set('enclosure@length' => 0);
+      }
+      $feed->to_file($output_dir->child("$user.rss"));
+  }
+  catch {
+      my $error = blessed $_ && $_->isa('Net::Twitter::Lite::Error') ? $_->error : $_;
+      warn $error;
+  };
+}
