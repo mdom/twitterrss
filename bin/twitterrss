@@ -56,7 +56,11 @@ for my $user ( @{$config->{user}} ) {
 	}
 
 	if ( keys %url ) {
-		$text =~ s($RE{URI}{HTTP}{-keep => 1})(qq{<a href="$url{$1}->{expanded_url}">$url{$1}->{display_url}</a>})eg;
+		$text =~ s($RE{URI}{HTTP}{-keep => 1})(
+			exists $url{$1}
+                        ? qq{<a href="$url{$1}->{expanded_url}">$url{$1}->{display_url}</a>}
+                        : $1
+                )xeg;
         }
 
 	$text =~ s{#([[:alnum:]]+)}{<a href="http://twitter.com/search?q=%23$1">#$1</a>}g;
