@@ -13,6 +13,8 @@ use Regexp::Common qw /URI/;
 use Sys::Syslog qw(:standard :macros);
 use autodie;
 
+our $VERSION = '0.01';
+
 openlog('twitterrss','pid',LOG_USER);
 
 my $feed = XML::FeedPP::RSS->new();
