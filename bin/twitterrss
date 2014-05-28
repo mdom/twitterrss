@@ -6,7 +6,6 @@ use warnings;
 use Net::Twitter::Lite::WithAPIv1_1;
 use Scalar::Util 'blessed';
 use Try::Tiny;
-use Path::Tiny;
 use YAML::Tiny;
 use XML::FeedPP;
 use Date::Parse qw(str2time);
@@ -18,7 +17,7 @@ openlog('twitterrss','pid',LOG_USER);
 
 my $feed = XML::FeedPP::RSS->new();
 
-my $config_file = path('/etc/twitterrss.conf');
+my $config_file = '/etc/twitterrss.conf';
 
 my $config = YAML::Tiny->read($config_file)
   or die "Can't parse $config_file: $YAML::Tiny::errstr\n";
@@ -26,10 +25,10 @@ my $config = YAML::Tiny->read($config_file)
 # we just need the first document
 $config = $config->[0];
 
-my $output_dir = path($config->{output_dir});
+my $output_dir = $config->{output_dir};
 die "Missing output directory in config file\n"
 	unless $output_dir;
-$output_dir->mkpath();
+mkdir $output_dir;
 
 my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
       consumer_key        => $config->{consumer_key},
