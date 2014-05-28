@@ -1,6 +1,7 @@
 use Module::Build;
 Module::Build->new(
     module_name => 'App::twitterrss',
+    dist_version_from => 'bin/twitterrss',
     license     => 'perl',
     requires    => {
         'Net::Twitter::Lite::WithAPIv1_1' => 0,
