@@ -1,0 +1,52 @@
+=pod
+
+=head1 NAME
+
+twitterrss - Convert mentions to a RSS feed
+
+=head1 DESCRIPTION
+
+twitterrss converts the 20 most recent mentions for the authenticating
+user to a RSS feed. In the process URLs are expanded and profile images
+are attached as media enclosures. 
+
+=head1 CONFIGURATION
+
+The scripts reads it's configuration from the YAML file I</etc/twitterrss.conf>.
+
+  consumer_key: <YOUR_CONSUMER_KEY>
+  consumer_secret: <YOUR_CONSUMER_SECRET>
+  token: <YOUR_TOKEN>
+  token_secret: <YOUR_TOKEN_SECRET>
+  output_dir: /var/www/twitterrss/mentions/
+  user:
+    - <FIRST_USER>
+    - <ANOTHER_USER>
+
+For every user a file is written in I<$output_dir/$user.rss>.
+
+=head1 INSTALLATION
+
+It is possible to install this script via perl normal install routines. 
+
+  perl Build.PL
+  ./Build
+  ./Build install
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright 2014 Mario Domgoergen C<< <mario@domgoergen.com> >>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
